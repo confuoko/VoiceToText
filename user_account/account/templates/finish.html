@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Успешная отправка</title>
+    <!-- Подключение Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f9f9f9; /* Светлый фон */
+            font-family: 'Arial', sans-serif;
+            color: #333; /* Темный цвет текста */
+        }
+
+        .navbar {
+            background-color: #4285F4; /* Цвет Google */
+        }
+
+        .navbar-brand,
+        .nav-link {
+            color: #ffffff !important; /* Белый цвет текста */
+        }
+
+        .message-container {
+            min-height: 5vh; /* Минимальная высота контейнера */
+            display: flex; /* Использование Flexbox */
+            justify-content: center; /* Центрировать по горизонтали */
+            align-items: center; /* Центрировать по вертикали */
+        }
+
+        h1 {
+            font-size: 36px; /* Размер заголовка */
+            font-weight: 600; /* Полужирный текст */
+            text-align: center; /* Центрировать заголовок */
+            margin: 0; /* Убрать отступы */
+        }
+
+        /* Отступ между навигационной панелью и сообщением */
+        .message-container-wrapper {
+            margin-top: 4cm; /* Отступ в 2 сантиметра для подъема на 4 см */
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Навигационная панель -->
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">Мой Стартап</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{%url 'logout'%}">Главная</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">О нас</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Выйти</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Контейнер с сообщением -->
+    <div class="container message-container-wrapper">
+        <div class="message-container">
+            <p>Welcome, {{request.user.username}}</p>
+        </div>
+        <div class="message-container">
+            <p>Вы успешно отправили запись</p>
+        </div>
+        <div class="message-container">
+            <p>Результаты транскрибации и аналитики будут направлены вам на почту в течение дня</p>
+        </div>
+    </div>
+
+    <!-- Подключение Bootstrap JS и jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
