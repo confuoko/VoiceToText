@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Две формы</title>
+    <title>Форма ввода данных</title>
     <!-- Подключение Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Подключение Font Awesome -->
@@ -29,11 +29,18 @@
             border-radius: 15px; /* Закругленные углы */
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Тень */
             padding: 30px; /* Отступы внутри формы */
-            margin: 10px; /* Отступ между формами */
-            height: 400px; /* Высота формы */
-            display: flex; /* Использование Flexbox */
-            flex-direction: column; /* Вертикальное расположение элементов */
-            justify-content: space-between; /* Разделение элементов */
+            position: relative; /* Для абсолютного позиционирования */
+            z-index: 1; /* Поднять над фоном */
+        }
+
+        .form-control {
+            border: 1px solid #dcdcdc; /* Светло-серая граница */
+            border-radius: 5px; /* Закругленные углы */
+        }
+
+        .form-control:focus {
+            border-color: #4285F4; /* Цвет границы при фокусе */
+            box-shadow: 0 0 5px rgba(66, 133, 244, 0.5); /* Тень при фокусе */
         }
 
         .btn-primary {
@@ -46,20 +53,11 @@
             background-color: #2c9c4b; /* Темный зеленый цвет кнопки при наведении */
         }
 
-        h2 {
-            margin-bottom: 15px;
-            font-size: 20px; /* Размер заголовка */
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px; /* Размер заголовка */
             font-weight: 600; /* Полужирный текст */
             text-align: center; /* Центрировать заголовок */
-        }
-
-        p {
-            text-align: center; /* Центрировать текст */
-        }
-
-        /* Отступ между навигационной панелью и формами */
-        .form-container-wrapper {
-            margin-top: 4cm; /* Отступ в 4 сантиметра */
         }
     </style>
 </head>
@@ -87,32 +85,25 @@
         </div>
     </nav>
 
-    <!-- Контейнер с формами -->
-    <div class="container d-flex justify-content-center align-items-start form-container-wrapper" style="min-height: 80vh;">
-        <div class="col-md-5 form-container">
-            <h2>Транскрибация</h2>
-            <p>Транскрибация аудиозаписей — это процесс преобразования устной речи 
-                в текстовую форму с использованием либо ручного, либо автоматизированного метода. 
-                Автоматическая транскрибация становится все более точной и быстрой, 
-                обеспечивая пользователей быстрыми результатами с возможностью дальнейшего редактирования. 
-        
-            </p>
-            <a href="{% url 'simple' %}" class="btn btn-primary btn-block">Only Transcribe</a>
-            
-        </div>
+    <!-- Центрированная форма ввода -->
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-md-6 form-container">
+            <h1>Введите данные</h1>
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                <label for="hrefname"><i class="fas fa-file-upload"></i> Ссылка на аудиозапись</label>
+                <input type="text" class="form-control" id="hrefname" name="hrefname" placeholder="Введите ссылку на аудиозапись" required>
+                </div>
 
-        <div class="col-md-5 form-container">
-            <h2>Аналитика</h2>
-            <p>После транскрибации клиент получит не только текстовую версию записей, 
-                но и детализированную аналитику, включая распознавание участников диалога, 
-                выявление ключевых тем и оценку эмоционального фона. 
-                Этот подход помогает быстро анализировать большие объемы данных 
-                и принимать обоснованные решения на основе голосовых данных.
-
-
-            </p>
-            <a href="{% url 'complex' %}" class="btn btn-primary btn-block">Analize</a>
-            
+                <div class="form-group">
+                <label for="email"><i class="fas fa-envelope"></i> Адрес электронной почты</label>
+                <input type="text" class="form-control" id="email" name="email" placeholder="Введите email" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Отправить</button>
+            </form>
         </div>
     </div>
 

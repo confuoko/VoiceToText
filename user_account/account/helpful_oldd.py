@@ -4,6 +4,10 @@ import os
 import gc 
 from openai import OpenAI
 import tiktoken
+from pathlib import Path
+import shutil
+ 
+
 
 # переменная для работы с одним файлом
 DIR_NAME = 'audio_19102024.wav'
@@ -12,8 +16,11 @@ DIR_NAME = 'audio_19102024.wav'
 FOLDER_NAME = 'analyze_folder'
 DIR_FOLDER_NAME = "./analyze_folder"
 
+# в этот текстовый файл постепенно будут сохраняться результаты транскрибации и аналитики
+TXT_FILE_NAME = 'output_20.10.2024.txt'
+TXT_FOLDER_NAME = 'output_26.10.2024.txt'
 #ключ openai не забыть удалить
-API_KEY = "YOUR_API_KEY"
+API_KEY = "sk-CQ9Yzv3mdEn-91P1mJKufUuxpos3Z8sBdU5ndQpZQNT3BlbkFJlKMWcFC3d_2s8SraqrUPsvqGqc1fiCaLSRYDu7kH0A"
 client = OpenAI(api_key = API_KEY)
 
 # просто скачивает один файл, ничего не возвращает
@@ -25,10 +32,12 @@ def upload_one_audio(google_href, directory_name):
 # на вход принимает ссылку на папку и название папки для сохранения
 def upload_folder(google_href, folder_name):
     gdown.download_folder(google_href, output=folder_name,  quiet=False)
+    print('Папка скачалась')
 
 # возвращает транскрибированный текст
-# принимает на вход имя файла
-def transcribe_whisperx(dir_name):
+# Создает файл txt
+# принимает на вход название аудиофайла
+def transcribe_whisperx(dir_name, fl_name):
     device = "cpu" 
     audio_file = dir_name
     compute_type = "int8"
@@ -42,12 +51,13 @@ def transcribe_whisperx(dir_name):
     result = whisperx.align(result["segments"], model_a, metadata, audio, device, return_char_alignments=False)
     
     # Вставить токен из Pyannote
-    diarize_model = whisperx.DiarizationPipeline(use_auth_token='ADD_YOUR_TOKEN', device=device)
+    diarize_model = whisperx.DiarizationPipeline(use_auth_token='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', device=device)
     diarize_segments = diarize_model(audio)
 
     result = whisperx.assign_word_speakers(diarize_segments, result)
-
-    data = [[segment["speaker"], segment["text"]] for segment in result["segments"]]
+    
+    # добавлен UNKNOWN чтобы програ не падала, если не удастся распознать говорящего
+    data = [[segment.get("speaker", "UNKNOWN"), segment["text"]] for segment in result["segments"]]
 
     result_final = []
     current_num = None
@@ -65,6 +75,13 @@ def transcribe_whisperx(dir_name):
     # Добавляем последние собранные слова
     if current_num is not None:
         result_final.append([current_num, ' '.join(current_words)])
+
+    # записываем результат транскрибации построчно в файл
+    with open(fl_name, 'a', encoding="utf8") as file:
+        file.write("" + '\n')
+        for element in result_final:
+            file.write(str(element) + '\n')
+        file.write("" + '\n')
 
     return str(result_final)
 
@@ -131,8 +148,8 @@ def processText(
 
 
 # функция для аналитики: саммари по аудио в целом и по каждому говорящему
-# ничего не возвращает, записывает аналитику в файл file.txt
-# принимает на вход текст
+# ничего не возвращает, записывает аналитику в файл TXT_FILE_NAME
+# принимает на вход транскрибированный текст
 def gpt_magic(raw_text):
     content = raw_text
 
@@ -143,7 +160,7 @@ def gpt_magic(raw_text):
     text_3 = processText(prompt = "Сформулируй 5 основных проблем, которые обсуждали говорящие. Напечатай каждую проблему с новой строки по убыванию серьезности и важности", text_data = content)
     
     # записали красиво в файл
-    with open('file.txt', 'a', encoding="utf8") as file:
+    with open(TXT_FILE_NAME, 'a', encoding="utf8") as file:
         file.write(text[0] + '\n')
         file.write(text_2[0] + '\n')
         file.write(text_3[0] + '\n')
@@ -156,44 +173,57 @@ def down(href_name):
     upload_one_audio(href_name, DIR_NAME)
 
     # 2. транскрибируем скачанный файл и возвращаем текст
-    output_text = transcribe_whisperx(DIR_NAME)
-    with open('file.txt', 'a', encoding="utf8") as file:
-        file.write(output_text + '\n')
+    output_text = transcribe_whisperx(DIR_NAME, TXT_FILE_NAME)
     
-    # 3. добавляем саммари от gpt
+    # 3. генерируем саммари от gpt
     gpt_magic(output_text)
-    with open("file.txt", encoding="utf8") as file:
+
+    # 4. забираем текст из TXT_FILE_NAME и записываем его в переменную для перечачи в письмо
+    with open(TXT_FILE_NAME, encoding="utf8") as file:
         content_2 = file.read()
+    # возвращаем красивый текст для письма    
     return content_2
 
-
-# функция для работы с папкой аудио, дописываю
 def down_2(href_name):
-    # 1. скачиваем файл в директорию
+    # 1. скачиваем файл в директорию FOLDER_NAME
     upload_folder(href_name, FOLDER_NAME)
+    print('функция upload_folder выполнена')
 
     # 2. транскрибируем каждую аудиозапись и составляем совокупный текст
     files = os.listdir(DIR_FOLDER_NAME)
     dirs = []
     for file in files:
-        dir = './' + file
+        dir = FOLDER_NAME + '/' + file
         dirs.append(dir)
     
+
     big_text = []
+    # транскрибируем каждую аудио
     for dir in dirs:
-        mini_text = transcribe_whisperx(dir)
-        big_text.append(mini_text)
+        # 1.Запишем название аудио
+        with open(TXT_FOLDER_NAME, 'a', encoding="utf8") as file:
+            naming = str(dir)
+            file.write(naming)
+        # 2. Запишем сам текст
+        transcribe_whisperx(dir, TXT_FOLDER_NAME)
+        print('готово')
+    
+    # считываем текст всех аудио в переменную
+    with open(TXT_FOLDER_NAME, encoding="utf8") as file:
+        big_text = file.read()
 
     return str(big_text)
 
-
-
-"""
-# удаление файлов
 def delete_files(name_of_text_file, name_of_audio_file):
     t = Path(f'{name_of_text_file}')
     a = Path(f'{name_of_audio_file}')
 
     t.unlink()
     a.unlink()
-"""
+
+def delete_folder_and_txt(name_of_text_file, name_of_folder):
+    t = Path(f'{name_of_text_file}')
+    t.unlink()
+
+    shutil.rmtree(name_of_folder)
+

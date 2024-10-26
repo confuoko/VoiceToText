@@ -11,6 +11,7 @@ urlpatterns = [
     path("edit/", views.edit_item, name="edit"),
 
     path("simple/", views.simple, name="simple"),
+    path("complex/", views.complex, name="complex"),
 
 
     path("finish/", views.show_finish, name="finish"),

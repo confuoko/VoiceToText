@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404
 
 from .models import Item, Contact
-from .tasks import send_spam_email
+from .tasks import send_spam_email, send_folder_analys
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -65,16 +65,31 @@ def simple(request):
         transobj = Contact.objects.create(hrefname=hrefname, email=email)
         transobj.save()
         send_spam_email.delay(email, hrefname)
+        # добавить удаление файлов и аудио через функцию
 
         return redirect("finish") # видимо с методом get
     
     return render(request, "simple.html", {"items": items})
 
+def complex(request):
+    items = Item.objects.filter(created_by = request.user)
+    if request.method =="POST":
+        hrefname = request.POST["hrefname"]
+        email = request.POST["email"]
+
+        transobj = Contact.objects.create(hrefname=hrefname, email=email)
+        transobj.save()
+        send_folder_analys.delay(email, hrefname)
+        # добавить удаление файлов и аудио через функцию
+
+        return redirect("finish") # видимо с методом get
+    
+    return render(request, "complex.html", {"items": items})
+
 
 def show_finish(request):
     user = request.user.username
     return render(request, "finish.html")
-
 
 
 def add_item(request):
