@@ -20,7 +20,7 @@ DIR_FOLDER_NAME = "./analyze_folder"
 TXT_FILE_NAME = 'output_20.10.2024.txt'
 TXT_FOLDER_NAME = 'output_26.10.2024.txt'
 #ключ openai не забыть удалить
-API_KEY = "sk-CQ9Yzv3mdEn-91P1mJKufUuxpos3Z8sBdU5ndQpZQNT3BlbkFJlKMWcFC3d_2s8SraqrUPsvqGqc1fiCaLSRYDu7kH0A"
+API_KEY = "kek"
 client = OpenAI(api_key = API_KEY)
 
 # просто скачивает один файл, ничего не возвращает
@@ -51,7 +51,7 @@ def transcribe_whisperx(dir_name, fl_name):
     result = whisperx.align(result["segments"], model_a, metadata, audio, device, return_char_alignments=False)
     
     # Вставить токен из Pyannote
-    diarize_model = whisperx.DiarizationPipeline(use_auth_token='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', device=device)
+    diarize_model = whisperx.DiarizationPipeline(use_auth_token='kekk', device=device)
     diarize_segments = diarize_model(audio)
 
     result = whisperx.assign_word_speakers(diarize_segments, result)
